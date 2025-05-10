@@ -28,6 +28,13 @@ from Dassl.dassl.utils import (
 
 _tokenizer = _Tokenizer()
 
+def entropy_loss(logits: torch.Tensor) -> torch.Tensor:
+    """Compute mean entropy over a batch of logits."""
+    probs = F.softmax(logits, dim=1)
+    log_probs = F.log_softmax(logits, dim=1)
+    per_sample_entropy = -torch.sum(probs * log_probs, dim=1)
+    return per_sample_entropy.mean()
+
 def load_clip_to_cpu(cfg):
     backbone_name = cfg.MODEL.BACKBONE.NAME
     url = clip._MODELS[backbone_name]
@@ -282,14 +289,16 @@ class PromptFL(TrainerX):
         if prec == "amp":
             with autocast():
                 output = self.model(image)
-                loss = F.cross_entropy(output, label)
+                # loss = F.cross_entropy(output, label)
+                loss = entropy_loss(output)
             self.optim.zero_grad()
             self.scaler.scale(loss).backward()
             self.scaler.step(self.optim)
             self.scaler.update()
         else:
             output = self.model(image)
-            loss = F.cross_entropy(output, label)
+            # loss = F.cross_entropy(output, label)
+            loss = entropy_loss(output)
             if fedprox:
                 model_weight = self.model.state_dict()
                 fed_prox_reg = ((mu / 2) * torch.norm((model_weight['prompt_learner.ctx'] - global_weight['prompt_learner.ctx'])) ** 2)
@@ -354,7 +363,8 @@ class Baseline(TrainerX):
     def forward_backward(self, batch):
         input, label = self.parse_batch_train(batch)
         output = self.model(input)
-        loss = F.cross_entropy(output, label)
+        # loss = F.cross_entropy(output, label)
+        loss = entropy_loss(output)
         self.model_backward_and_update(loss)
 
         loss_summary = {

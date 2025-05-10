@@ -24,6 +24,13 @@ import random
 
 _tokenizer = _Tokenizer()
 
+def entropy_loss(logits: torch.Tensor) -> torch.Tensor:
+    """Compute mean entropy over a batch of logits."""
+    probs = F.softmax(logits, dim=1)
+    log_probs = F.log_softmax(logits, dim=1)
+    per_sample_entropy = -torch.sum(probs * log_probs, dim=1)
+    return per_sample_entropy.mean()
+
 class PromptLearner(nn.Module):
     def __init__(self, cfg, classnames, clip_model):
         super().__init__()
@@ -362,7 +369,8 @@ class PFEDMOAP(TrainerX):
         if prec == "amp":
             with autocast():
                 output = self.model(image)
-                loss = F.cross_entropy(output, label)
+                # loss = F.cross_entropy(output, label)
+                loss = entropy_loss(output)
             self.optim_p.zero_grad()
             self.optim_g.zero_grad()
             self.scaler.scale(loss).backward()
@@ -371,7 +379,8 @@ class PFEDMOAP(TrainerX):
             self.scaler.update()
         else:
             output = self.model(image)
-            loss = F.cross_entropy(output, label)
+            # loss = F.cross_entropy(output, label)
+            loss = entropy_loss(output)
             self.model_backward_and_update(loss)
 
         loss_summary = {

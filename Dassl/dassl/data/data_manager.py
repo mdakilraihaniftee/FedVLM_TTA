@@ -95,21 +95,21 @@ class DataManager:
         # )
 
         # Build federated fed_train_loader_x
-        fed_train_loader_x_dict = defaultdict()
-        if dataset.federated_train_x:
-            for idx in range(cfg.DATASET.USERS):
-                fed_train_loader_x = build_data_loader(
-                    cfg,
-                    sampler_type=cfg.DATALOADER.TRAIN_X.SAMPLER,
-                    data_source=dataset.federated_train_x[idx],
-                    batch_size=cfg.DATALOADER.TRAIN_X.BATCH_SIZE,
-                    n_domain=cfg.DATALOADER.TRAIN_X.N_DOMAIN,
-                    n_ins=cfg.DATALOADER.TRAIN_X.N_INS,
-                    tfm=tfm_train,
-                    is_train=True,
-                    dataset_wrapper=dataset_wrapper
-                )
-                fed_train_loader_x_dict[idx] = fed_train_loader_x
+        # fed_train_loader_x_dict = defaultdict()
+        # if dataset.federated_train_x:
+        #     for idx in range(cfg.DATASET.USERS):
+        #         fed_train_loader_x = build_data_loader(
+        #             cfg,
+        #             sampler_type=cfg.DATALOADER.TRAIN_X.SAMPLER,
+        #             data_source=dataset.federated_train_x[idx],
+        #             batch_size=cfg.DATALOADER.TRAIN_X.BATCH_SIZE,
+        #             n_domain=cfg.DATALOADER.TRAIN_X.N_DOMAIN,
+        #             n_ins=cfg.DATALOADER.TRAIN_X.N_INS,
+        #             tfm=tfm_train,
+        #             is_train=True,
+        #             dataset_wrapper=dataset_wrapper
+        #         )
+        #         fed_train_loader_x_dict[idx] = fed_train_loader_x
 
         # Build federated fed_test_loader_x
         fed_test_loader_x_dict = defaultdict()
@@ -188,7 +188,7 @@ class DataManager:
         # self.train_loader_u = train_loader_u
         # self.val_loader = val_loader
         # self.test_loader = test_loader
-        self.fed_train_loader_x_dict = fed_train_loader_x_dict
+        self.fed_train_loader_x_dict = fed_test_loader_x_dict  # fed_test_loader_x_dict as train_loader (TTA)
         self.fed_test_loader_x_dict = fed_test_loader_x_dict
 
         if cfg.VERBOSE:

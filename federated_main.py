@@ -1,3 +1,6 @@
+import os
+os.environ["PROJECT"] = os.getcwd()  # or your desired project root
+
 import argparse
 import torch
 from Dassl.dassl.utils import setup_logger, set_random_seed, collect_env_info
